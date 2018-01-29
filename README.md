@@ -1,6 +1,9 @@
 # RxNetwork2-Android
 A simple util and example of how to track connectivity changes in Android applications.
 
+## About My Fork
+
+Port to RxJava2
 
 ### How to use
 In Android Manifest add 
@@ -31,6 +34,4 @@ compile 'com.laimiux.rxnetwork:rxnetwork:0.0.4'
 
 ```
 compile 'cn.jingzhuan.lib:rxnetwork:1.0.0'
-
-
-
+```
