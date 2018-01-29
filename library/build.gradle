@@ -16,6 +16,11 @@ android {
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
     }
+    android {
+        lintOptions {
+            abortOnError false
+        }
+    }
 }
 
 dependencies {
@@ -24,4 +29,16 @@ dependencies {
     compile "io.reactivex.rxjava2:rxjava:2.1.8"
 }
 
-apply from: rootProject.file('gradle/gradle-mvn-push.gradle')
+
+
+
+apply plugin: 'com.novoda.bintray-release'
+
+publish {
+    userOrg = 'donglua'
+    groupId = 'cn.jingzhuan.lib'
+    artifactId = 'rxnetwork'
+    publishVersion = "1.0.0"
+    desc = 'Rx Network rxjava2 Android'
+    website = 'https://github.com/donglua/RxNetwork2-Android'
+}
