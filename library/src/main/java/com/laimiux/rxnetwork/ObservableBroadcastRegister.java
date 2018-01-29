@@ -6,20 +6,20 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.os.Handler;
 
-import rx.Observable;
-import rx.Subscriber;
-import rx.Subscription;
-import rx.functions.Action0;
-import rx.subscriptions.Subscriptions;
+import io.reactivex.ObservableEmitter;
+import io.reactivex.ObservableOnSubscribe;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.disposables.Disposables;
+import io.reactivex.functions.Action;
 
-class OnSubscribeBroadcastRegister implements Observable.OnSubscribe<Intent> {
+class ObservableBroadcastRegister implements ObservableOnSubscribe<Intent> {
 
     private final Context context;
     private final IntentFilter intentFilter;
     private final String broadcastPermission;
     private final Handler schedulerHandler;
 
-    public OnSubscribeBroadcastRegister(Context context, IntentFilter intentFilter, String broadcastPermission, Handler schedulerHandler) {
+    public ObservableBroadcastRegister(Context context, IntentFilter intentFilter, String broadcastPermission, Handler schedulerHandler) {
         this.context = context;
         this.intentFilter = intentFilter;
         this.broadcastPermission = broadcastPermission;
@@ -27,23 +27,23 @@ class OnSubscribeBroadcastRegister implements Observable.OnSubscribe<Intent> {
     }
 
     @Override
-    public void call(final Subscriber<? super Intent> subscriber) {
+    public void subscribe(final ObservableEmitter<Intent> emitter) throws Exception {
         final BroadcastReceiver broadcastReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
-                subscriber.onNext(intent);
+                emitter.onNext(intent);
             }
         };
 
-        final Subscription subscription = Subscriptions.create(new Action0() {
+        final Disposable disposable = Disposables.fromAction(new Action() {
             @Override
-            public void call() {
+            public void run() throws Exception {
                 context.unregisterReceiver(broadcastReceiver);
             }
         });
 
-        subscriber.add(subscription);
-        context.registerReceiver(broadcastReceiver, intentFilter, broadcastPermission, schedulerHandler);
+        emitter.setDisposable(disposable);
 
+        context.registerReceiver(broadcastReceiver, intentFilter, broadcastPermission, schedulerHandler);
     }
 }

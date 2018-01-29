@@ -4,28 +4,28 @@ import android.app.Activity;
 import android.os.Bundle;
 import android.widget.Button;
 
-import rx.Observable;
-import rx.Subscription;
 import com.laimiux.rxnetwork.RxNetwork;
-import rx.android.schedulers.AndroidSchedulers;
-import rx.functions.Action1;
-import rx.functions.Func1;
+
+import io.reactivex.Flowable;
+import io.reactivex.android.schedulers.AndroidSchedulers;
+import io.reactivex.disposables.Disposable;
+import io.reactivex.functions.Consumer;
+import io.reactivex.functions.Function;
 
 public class SampleActivity extends Activity {
   Button sendButton;
-  private Subscription sendStateSubscription;
+  private Disposable sendStateSubscription;
 
 
   @Override protected void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.sample_view);
 
+    sendButton = findViewById(R.id.send_button);
 
-    sendButton = (Button) findViewById(R.id.send_button);
-
-    final Observable<ButtonState> sendStateStream =
-        RxNetwork.stream(this).map(new Func1<Boolean, ButtonState>() {
-          @Override public ButtonState call(Boolean hasInternet) {
+    final Flowable<ButtonState> sendStateStream =
+        RxNetwork.flow(this).map(new Function<Boolean, ButtonState>() {
+          @Override public ButtonState apply(Boolean hasInternet) {
             if (!hasInternet) {
               return new ButtonState(R.string.not_connected, false);
             }
@@ -36,8 +36,9 @@ public class SampleActivity extends Activity {
 
     sendStateSubscription =
         sendStateStream.observeOn(AndroidSchedulers.mainThread())
-            .subscribe(new Action1<ButtonState>() {
-              @Override public void call(ButtonState buttonState) {
+            .subscribe(new Consumer<ButtonState>() {
+              @Override
+              public void accept(ButtonState buttonState) throws Exception {
                 sendButton.setText(buttonState.textId);
                 sendButton.setEnabled(buttonState.isEnabled);
               }
@@ -46,7 +47,7 @@ public class SampleActivity extends Activity {
 
 
   @Override protected void onDestroy() {
-    sendStateSubscription.unsubscribe();
+    sendStateSubscription.dispose();
     sendStateSubscription = null;
 
     super.onDestroy();
